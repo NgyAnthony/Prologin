@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<!-- saved from url=(0088)https://prologin.org/static/ctf/2019/chal2_97599ae8479bee67b4830654a7405c1fc99d20f8.html -->
+<html lang="fr_FR"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        
+        <title>ProloCorp</title>
+    <style>
+@font-face {
+    font-family: AlienLines;
+    src: url(chal2_12ae23e4bf54e03481bbcbf3be37ac5c01d51993.ttf);
+}
+
+* {
+    padding: 0;
+    margin: 0;
+}
+
+body {
+    color: #ffffff;
+    background: radial-gradient(ellipse at bottom, rgba(0,128,255,0.2), transparent 60%), linear-gradient(rgba(0,0,0,0.8), transparent), url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAYAAAAEAgMAAADQaqbQAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH4goFDDILmY6MJwAAABl0RVh0Q29tbWVudABDcmVhdGVkIHdpdGggR0lNUFeBDhcAAAAJUExURQAAABERERwcHBmG7TAAAAAUSURBVAgdY2ANYFgawBAiwBA2AQAN2wKVBdFZhQAAAABJRU5ErkJggg==);
+    min-height: 100vh;
+    font-family: AlienLines;
+    font-weight: 300;
+    font-size: 1.8rem;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+}
+
+h1 {
+    font-weight: 300;
+    margin-bottom: .3em;
+}
+
+label[for=input] {
+    margin-bottom: .3em;
+}
+
+.container {
+    border-bottom: 2px solid #fff;
+    max-width: 95vw;
+    display: grid;
+    grid-template-columns: 1fr 2px min-content;
+    grid-gap: 5px;
+    padding: 5px 0;
+}
+
+.container * {
+    background: none;
+    border: none;
+    color: inherit;
+    font-size: 1em;
+    font-family: inherit;
+    font-weight: inherit;
+}
+
+.container span {
+    background: #fff;
+}
+
+#input {
+    width: 100%;
+}
+.popup {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh;
+    background: rgba(0,0,0,0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    transition: opacity 0.2s;
+}
+
+#correct_pass {
+    color: #008AFF;
+    font-weight: 500;
+}
+
+#wrong_pass {
+    color: #FF0000;
+    font-weight: 500;
+}
+
+.noscript p {
+    text-align: center;
+}
+
+.hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+    </style>
+    </head>
+    <body>
+        <noscript>
+            <div class="noscript popup">
+                <p>Vous devez autoriser le javascript sur cette page
+                pour pouvoir l'utiliser.</p>
+            </div>
+        </noscript>
+        <h1>ProloCorp</h1>
+        <label for="input">Mot de passe&nbsp;:</label>
+        <div class="container">
+            <input id="input" placeholder="" label="test" type="text" autocomplete="falsy"><span></span><button>Vérifier</button>
+        </div>
+        <div class="hidden popup" tabindex="0" id="correct_pass">
+            <p>Mot de passe correct.</p>
+        </div>
+        <div class="popup hidden" tabindex="0" id="wrong_pass">
+            <p>Mot de passe incorrect.</p>
+        </div>
+        <script>
+            let sha256s = [[88,21,124,196,146,49,119,33,236,141,215,52,175,46,216,250,44,240,8,8,90,0,178,146,232,194,180,161,61,230,163,255],[39,102,165,69,101,60,62,150,101,12,27,191,238,69,125,79,241,23,112,234,181,246,191,79,32,138,116,54,194,64,181,13],[42,100,127,92,224,26,85,32,25,25,175,195,247,146,142,225,44,215,146,207,44,20,181,36,105,149,27,183,156,172,201,197],[139,49,171,172,18,150,234,124,82,58,200,132,46,48,91,185,120,142,181,107,160,145,196,246,80,171,162,156,199,69,229,116],[5,58,156,201,121,208,217,118,108,51,134,193,100,26,59,84,131,52,41,1,17,138,227,127,198,51,174,102,125,174,213,98],[221,205,219,228,67,77,174,36,90,229,32,193,244,86,4,3,176,132,32,202,181,73,146,86,110,146,201,55,79,147,68,129],[164,212,163,137,35,147,158,126,217,155,195,248,174,132,69,154,109,232,144,39,43,127,222,250,210,35,30,44,101,249,47,11],[228,254,179,209,39,106,188,0,51,200,153,56,251,226,156,254,197,140,91,174,75,15,140,55,144,209,182,184,178,121,86,229],[245,164,120,25,122,83,237,103,238,86,38,11,227,90,87,5,206,190,43,251,208,140,111,210,88,62,145,243,218,207,57,230]];
+
+async function hash(input) {
+    let inputLen = Math.ceil(input.length / 4);
+    if (inputLen > sha256s.length || inputLen < sha256s.length)
+        return false;
+    let valid = true;
+    for (let i = 0; i < inputLen; i++)
+    {
+        let buffer = [];
+        for (let j = 0; j < 4; j++) {
+            let b = input.charCodeAt(i*4+j) % 256;
+            if (isNaN(b)) {
+                b = 0;
+            }
+            buffer[j] = b;
+        }
+
+        let block = await crypto.subtle.digest("SHA-256", new Uint8Array(buffer).buffer).then(
+            e => {return new Uint8Array(e)}
+        );
+        console.log(block);
+        block.forEach((v,j) => {
+            if (sha256s[i][j] != v)
+                valid = false
+        })
+    }
+    return valid;
+}
+
+function validate() {
+    hash(document.querySelector("#input").value).then(success => {
+        let popup = document.querySelector("#" + (success ? "correct" : "wrong") + "_pass");
+        popup.classList.remove("hidden");
+        popup.focus()
+    });
+}
+
+document.querySelectorAll(".popup").forEach(e => e.onclick = () => {
+    e.classList.add("hidden");
+    document.querySelector("#input").focus();
+})
+
+document.querySelectorAll(".popup").forEach(e => e.onkeypress = () => {
+    e.classList.add("hidden");
+    document.querySelector("#input").focus();
+})
+
+document.querySelector("button").onclick = validate;
+document.querySelector("#input").onkeypress = e => {
+    if (e.key == "Enter")
+        validate();
+}
+        </script>
+    
+
+</body></html>
